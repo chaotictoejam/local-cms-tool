@@ -10,6 +10,8 @@ const PLATFORM_LABELS = {
   threads: 'Threads',
   bluesky: 'Bluesky',
   podcast: 'Podcast',
+  devto: 'DEV',
+  medium: 'Medium',
 }
 
 export default function EditModal({ item, config, apiKey, enabledPlatforms, onSave, onDelete, onClose }) {

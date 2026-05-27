@@ -23,7 +23,9 @@
       "shows": [
         { "name": "", "spotifyUrl": "", "appleUrl": "" }
       ]
-    }
+    },
+    "devto": { "enabled": true, "handle": "" },
+    "medium": { "enabled": true, "handle": "" }
   },
   "contentTypes": [],
   "platformRules": {
@@ -32,6 +34,8 @@
     "linkedin": "",
     "threads": "",
     "bluesky": "",
-    "podcast": ""
+    "podcast": "",
+    "devto": "",
+    "medium": ""
   }
 }

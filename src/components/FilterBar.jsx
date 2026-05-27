@@ -7,6 +7,8 @@ const PLATFORM_LABELS = {
   threads: 'Threads',
   bluesky: 'Bluesky',
   podcast: 'Podcast',
+  devto: 'DEV',
+  medium: 'Medium',
 }
 
 export default function FilterBar({ platforms, filters, onFiltersChange, viewMode, onViewModeChange }) {

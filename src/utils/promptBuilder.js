@@ -5,6 +5,8 @@ const PLATFORM_LABELS = {
   threads: 'Threads',
   bluesky: 'Bluesky',
   podcast: 'Podcast',
+  devto: 'DEV.to',
+  medium: 'Medium',
 }
 
 const PLATFORM_SITE_MAP = {
@@ -13,6 +15,8 @@ const PLATFORM_SITE_MAP = {
   instagram: 'community',
   threads: 'community',
   bluesky: 'community',
+  devto: 'professional',
+  medium: 'professional',
 }
 
 export function buildSystemPrompt(config, selectedPlatforms, contentType) {

@@ -11,6 +11,8 @@ const PLATFORM_LABELS = {
   threads: 'Threads',
   bluesky: 'Bluesky',
   podcast: 'Podcast',
+  devto: 'DEV',
+  medium: 'Medium',
 }
 
 export default function NewContentPage({ content, configState, settings }) {

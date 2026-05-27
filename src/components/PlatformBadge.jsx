@@ -5,6 +5,8 @@ const PLATFORM_STYLES = {
   threads: 'bg-gray-900 text-white',
   bluesky: 'bg-sky-500 text-white',
   podcast: 'bg-purple-600 text-white',
+  devto: 'bg-zinc-800 text-white',
+  medium: 'bg-emerald-700 text-white',
 }
 
 const PLATFORM_LABELS = {
@@ -14,6 +16,8 @@ const PLATFORM_LABELS = {
   threads: 'Threads',
   bluesky: 'Bluesky',
   podcast: 'Podcast',
+  devto: 'DEV',
+  medium: 'Medium',
 }
 
 export default function PlatformBadge({ platform, size = 'sm' }) {
