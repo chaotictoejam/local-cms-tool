@@ -1,0 +1,37 @@
+{
+  "creator": {
+    "name": "",
+    "tagline": "",
+    "voice": {
+      "dos": [],
+      "donts": [],
+      "neverStart": []
+    },
+    "sites": {
+      "professional": "",
+      "community": ""
+    }
+  },
+  "platforms": {
+    "instagram": { "enabled": true, "handle": "" },
+    "youtube": { "enabled": true, "channelUrl": "" },
+    "linkedin": { "enabled": true, "handle": "" },
+    "threads": { "enabled": true, "handle": "" },
+    "bluesky": { "enabled": true, "handle": "" },
+    "podcast": {
+      "enabled": true,
+      "shows": [
+        { "name": "", "spotifyUrl": "", "appleUrl": "" }
+      ]
+    }
+  },
+  "contentTypes": [],
+  "platformRules": {
+    "instagram": "",
+    "youtube": "",
+    "linkedin": "",
+    "threads": "",
+    "bluesky": "",
+    "podcast": ""
+  }
+}

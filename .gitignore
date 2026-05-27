@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+
+# Personal config — copy config.example.json to config.json to get started
+config.json
+
+# Local content data — this file is created automatically on first run
+data/content.json
