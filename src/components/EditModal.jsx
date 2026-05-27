@@ -1,8 +1,16 @@
 import { useState } from 'react'
-import DraftPanel from './DraftPanel'
 import PlatformBadge from './PlatformBadge'
 import { STATUSES } from './StatusBadge'
 import { generateDrafts } from '../utils/api'
+
+const PLATFORM_LABELS = {
+  instagram: 'Instagram',
+  youtube: 'YouTube',
+  linkedin: 'LinkedIn',
+  threads: 'Threads',
+  bluesky: 'Bluesky',
+  podcast: 'Podcast',
+}
 
 export default function EditModal({ item, config, apiKey, enabledPlatforms, onSave, onDelete, onClose }) {
   const [form, setForm] = useState({
@@ -12,16 +20,17 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
     status: item.status || 'draft',
     targetDate: item.targetDate || '',
     publishedDate: item.publishedDate || '',
-    sourceMaterial: item.sourceMaterial || '',
     notes: item.notes || '',
+    sourceMaterial: item.sourceMaterial || '',
     drafts: { ...(item.drafts || {}) },
   })
+  const [tab, setTab] = useState('details')
+  const [showAiAssist, setShowAiAssist] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState(null)
-  const [tab, setTab] = useState('info')
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  const set = (key, value) => setForm((f) => ({ ...f, [key]: value }))
+  const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
 
   const togglePlatform = (p) => {
     set('platforms', form.platforms.includes(p)
@@ -30,7 +39,7 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
   }
 
   const handleGenerate = async () => {
-    if (!form.sourceMaterial.trim()) return
+    if (!apiKey) { setGenError('No API key — add it in Settings.'); return }
     setGenerating(true)
     setGenError(null)
     try {
@@ -42,7 +51,7 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
         apiKey,
       })
       set('drafts', { ...form.drafts, ...result })
-      setTab('drafts')
+      setShowAiAssist(false)
     } catch (e) {
       setGenError(e.message)
     } finally {
@@ -70,7 +79,7 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Edit Content Item</h2>
+          <h2 className="text-base font-semibold text-gray-900">Edit Item</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -79,23 +88,23 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
         </div>
 
         <div className="flex gap-0 border-b border-gray-200 px-6">
-          {['info', 'source', 'drafts'].map((t) => (
+          {['details', 'drafts'].map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-3 py-2.5 text-sm font-medium border-b-2 -mb-px capitalize transition-colors ${
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px capitalize transition-colors ${
                 tab === t
                   ? 'text-indigo-600 border-indigo-600'
                   : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
             >
-              {t === 'info' ? 'Details' : t === 'source' ? 'Source' : 'Drafts'}
+              {t === 'details' ? 'Details' : 'Drafts'}
             </button>
           ))}
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {tab === 'info' && (
+          {tab === 'details' && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -104,7 +113,6 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
                   value={form.title}
                   onChange={(e) => set('title', e.target.value)}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400"
-                  placeholder="Post title or reference"
                 />
               </div>
 
@@ -116,13 +124,10 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
                     onChange={(e) => set('contentType', e.target.value)}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400 bg-white"
                   >
-                    <option value="">— select type —</option>
-                    {contentTypes.map((ct) => (
-                      <option key={ct} value={ct}>{ct}</option>
-                    ))}
+                    <option value="">— type —</option>
+                    {contentTypes.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                   <select
@@ -167,7 +172,11 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
                     <button
                       key={p}
                       onClick={() => togglePlatform(p)}
-                      className={`transition-opacity ${form.platforms.includes(p) ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
+                      className={`rounded transition-opacity ${
+                        form.platforms.includes(p)
+                          ? 'opacity-100 ring-2 ring-indigo-400 ring-offset-1'
+                          : 'opacity-40 hover:opacity-70'
+                      }`}
                     >
                       <PlatformBadge platform={p} />
                     </button>
@@ -182,47 +191,84 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
                   onChange={(e) => set('notes', e.target.value)}
                   rows={3}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400 resize-none"
-                  placeholder="Internal notes, ideas, context…"
+                  placeholder="Internal notes, links, context…"
                 />
               </div>
-            </div>
-          )}
-
-          {tab === 'source' && (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Source Material</label>
-                <textarea
-                  value={form.sourceMaterial}
-                  onChange={(e) => set('sourceMaterial', e.target.value)}
-                  rows={10}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400 resize-none"
-                  placeholder="Paste podcast notes, script excerpt, talk abstract, tutorial description…"
-                />
-              </div>
-              {genError && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{genError}</p>
-              )}
-              <button
-                onClick={handleGenerate}
-                disabled={generating || !form.sourceMaterial.trim() || form.platforms.length === 0}
-                className="w-full py-2 px-4 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {generating ? 'Generating…' : 'Regenerate Drafts'}
-              </button>
             </div>
           )}
 
           {tab === 'drafts' && (
-            <div className="h-80">
+            <div className="space-y-4">
               {form.platforms.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-8">Select platforms in the Details tab first.</p>
+                <p className="text-sm text-gray-400 text-center py-8">
+                  Select platforms in Details first.
+                </p>
               ) : (
-                <DraftPanel
-                  platforms={form.platforms}
-                  drafts={form.drafts}
-                  onChange={(p, val) => set('drafts', { ...form.drafts, [p]: val })}
-                />
+                <>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setShowAiAssist((v) => !v)}
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Generate with AI
+                    </button>
+                  </div>
+
+                  {showAiAssist && (
+                    <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl space-y-3">
+                      <label className="block text-xs font-medium text-indigo-800">
+                        Source material for AI generation
+                      </label>
+                      <textarea
+                        value={form.sourceMaterial}
+                        onChange={(e) => set('sourceMaterial', e.target.value)}
+                        rows={4}
+                        className="w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400 resize-none"
+                        placeholder="Paste podcast notes, script excerpt, talk abstract…"
+                      />
+                      {genError && (
+                        <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">{genError}</p>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleGenerate}
+                          disabled={generating || !form.sourceMaterial.trim()}
+                          className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                        >
+                          {generating && (
+                            <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                            </svg>
+                          )}
+                          {generating ? 'Generating…' : 'Generate'}
+                        </button>
+                        <button onClick={() => setShowAiAssist(false)} className="text-xs text-indigo-600 hover:text-indigo-800">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {form.platforms.map((p) => (
+                    <div key={p}>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-medium text-gray-600">{PLATFORM_LABELS[p] || p}</label>
+                        <span className="text-xs text-gray-400">{(form.drafts[p] || '').length} chars</span>
+                      </div>
+                      <textarea
+                        value={form.drafts[p] || ''}
+                        onChange={(e) => set('drafts', { ...form.drafts, [p]: e.target.value })}
+                        rows={4}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400 resize-y"
+                        placeholder={`Write your ${PLATFORM_LABELS[p] || p} post here…`}
+                      />
+                    </div>
+                  ))}
+                </>
               )}
             </div>
           )}
@@ -232,15 +278,14 @@ export default function EditModal({ item, config, apiKey, enabledPlatforms, onSa
           {confirmDelete ? (
             <div className="flex items-center gap-2">
               <span className="text-sm text-red-600">Delete this item?</span>
-              <button onClick={() => { onDelete(item.id); onClose() }} className="text-sm font-medium text-red-600 hover:text-red-800">Yes, delete</button>
-              <button onClick={() => setConfirmDelete(false)} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+              <button onClick={() => { onDelete(item.id); onClose() }} className="text-sm font-medium text-red-600 hover:text-red-800">Yes</button>
+              <button onClick={() => setConfirmDelete(false)} className="text-sm text-gray-500">Cancel</button>
             </div>
           ) : (
-            <button onClick={() => setConfirmDelete(true)} className="text-sm text-red-500 hover:text-red-700">
+            <button onClick={() => setConfirmDelete(true)} className="text-sm text-red-400 hover:text-red-600">
               Delete
             </button>
           )}
-
           <div className="flex gap-2">
             <button onClick={onClose} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
               Cancel
